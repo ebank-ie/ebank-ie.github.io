@@ -1,0 +1,14 @@
+/* TODO: Convert to scss */
+
+header {
+    padding: 1rem;
+}
+
+header h1 {
+    padding: 0;
+}
+
+.disclaimer {
+    background-color: red;
+    padding: 1rem;
+}
