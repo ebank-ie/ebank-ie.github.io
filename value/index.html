@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Value | Ebank.ie</title>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+    <h1>Value Calculator</h1>
+<div id="app">
+    <table>
+        <thead>
+            <td>Name</td>
+            <td>Price</td>
+            <td>PPD</td>
+            <td>Purchase Date</td>
+            <td>Remaining</td>
+            <td></td>
+        </thead>
+        <tr v-for="item in calc.items">
+            <td><input v-model="item.name"></td>
+            <td>{{ calc.currency }}<input v-model="item.price"></td>
+            <td>{{ calc.currency }}<input v-model="item.ppd"></td>
+            <td><input v-model="item.purchase_date" type="date"></td>
+            <td><span v-if="item.left > 0">{{ calc.currency }}{{ item.left }}</span></td>
+            <td><button v-on:click="calc.remove(item.id)">Remove</button></td>
+        </tr>
+        <tfoot>
+            <td><b>Totals</b></td>
+            <td></td>
+            <td>{{ calc.currency }}{{ calc.ppd }}</td>
+            <td></td>
+            <td>{{ calc.currency }}{{ calc.left }}</td>
+        </tfoot>
+    </table>
+    <button v-on:click="add">Add</button>
+    <p>
+        Your budget is {{ calc.currency }}<input v-model="calc.budget"> so you
+        have {{ calc.currency }}{{ calc.budget - calc.ppd*30 }} remaining per
+        month.
+    </p>
+    <p>
+        Select your currency:
+        <select v-model="calc.currency">
+            <option selected>&euro;</option>
+        </select>
+    </p>
+
+</div>
+<script>
+"strict";
+
+class Item {
+    constructor(id) {
+        this.id = id
+
+        this.name = ''
+        this.price = 0.0
+        this.ppd = 1.0
+        this._purchase_date = new Date(Date.now())
+    }
+
+    get purchase_date() {
+        return this._purchase_date.toISOString().substring(0, 10)
+    }
+
+    set purchase_date(v) {
+        this._purchase_date = new Date(v)
+    }
+
+    get left() {
+        let days = Math.round((Date.now() - this._purchase_date)/(1000*60*60*24))
+        return this.price - (days * this.ppd)
+    }
+}
+
+class Calc {
+    constructor(storage) {
+        this._id = 0
+
+        this.budget = 50
+        this.currency = '€';
+        this.items = new Array()
+    }
+
+    add() {
+        this.items.push(new Item(this._id))
+        this._id++
+    }
+
+    remove(id) {
+        this.items = this.items.filter(item => item.id !== id)
+    }
+
+    get left() {
+        let total = 0
+        for(const item of this.items) {
+            total += Number(item.left > 0 ? item.left : 0)
+        }
+        return total
+    }
+
+    get ppd() {
+        let total = 0
+        for(const item of this.items) {
+            total += Number(item.left > 0 ? item.ppd : 0)
+        }
+        return total
+    }
+}
+
+let app = new Vue({
+    el: '#app',
+    data: {
+        calc: new Calc(),
+    },
+    methods: {
+        add: function() {
+            this.calc.add()
+        }
+    }
+})
+</script>
+</body>
+</html>
